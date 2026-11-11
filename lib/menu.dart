@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/infocard.dart';
 
@@ -8,7 +10,7 @@ class MyHomePage extends StatelessWidget {
   final String nama = "Umar Faiz Rahman";
   final String kelas = "PBP F";
 
-    final List<ItemHomepage> items = [
+  final List<ItemHomepage> items = [
     ItemHomepage("Lihat Proyek", Icons.folder),
     ItemHomepage("Tambah Proyek", Icons.add_circle),
     ItemHomepage("Logout", Icons.logout),
@@ -22,15 +24,12 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'MyPortfolio',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       // Body halaman utama dengan padding di sekelilingnya.
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -39,9 +38,15 @@ class MyHomePage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                InfoCard(title: 'NPM', content: npm),
-                InfoCard(title: 'Name', content: nama),
-                InfoCard(title: 'Class', content: kelas),
+                Expanded(
+                  child: InfoCard(title: 'NPM', content: npm),
+                ),
+                Expanded(
+                  child: InfoCard(title: 'Name', content: nama),
+                ),
+                Expanded(
+                  child: InfoCard(title: 'Class', content: kelas),
+                ),
               ],
             ),
 
@@ -55,6 +60,7 @@ class MyHomePage extends StatelessWidget {
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(
                       'Selamat datang di MyPortfolio Mobile!',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
@@ -63,17 +69,27 @@ class MyHomePage extends StatelessWidget {
                   ),
 
                   // GridView menampilkan kartu tombol dalam tata letak kisi 3 kolom.
-                  GridView.count(
-                    primary: true,
-                    padding: const EdgeInsets.all(20),
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 3,
-                    // shrinkWrap agar ukuran kisi menyesuaikan tinggi konten anak.
-                    shrinkWrap: true,
-                    children: items.map((ItemHomepage item) {
-                      return ItemCard(item);
-                    }).toList(),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Sisakan ruang untuk label pada layar kecil atau font besar.
+                      final cardWidth = (constraints.maxWidth - 60) / 3;
+                      final textScale =
+                          MediaQuery.textScalerOf(context).scale(14) / 14;
+                      return GridView.count(
+                        primary: false,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(20),
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        crossAxisCount: 3,
+                        mainAxisExtent: math.max(cardWidth, 160 * textScale),
+                        // Halaman menangani scroll, kisi mengikuti tinggi konten.
+                        shrinkWrap: true,
+                        children: items.map((ItemHomepage item) {
+                          return ItemCard(item);
+                        }).toList(),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -110,7 +126,9 @@ class ItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(content: Text("Kamu telah menekan tombol ${item.name}!"))
+              SnackBar(
+                content: Text("Kamu telah menekan tombol ${item.name}!"),
+              ),
             );
         },
         child: Container(
@@ -119,11 +137,7 @@ class ItemCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  item.icon,
-                  color: Colors.white,
-                  size: 30.0,
-                ),
+                Icon(item.icon, color: Colors.white, size: 30.0),
                 const Padding(padding: EdgeInsets.all(3)),
                 Text(
                   item.name,
