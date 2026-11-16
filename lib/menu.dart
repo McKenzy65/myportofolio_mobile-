@@ -9,9 +9,9 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   static const items = [
-    ItemHomepage('Lihat Proyek', Icons.folder),
-    ItemHomepage('Tambah Proyek', Icons.add_circle),
-    ItemHomepage('Logout', Icons.logout),
+    ItemHomepage('Lihat Proyek', Icons.folder, Color(0xFF1D4ED8)),
+    ItemHomepage('Tambah Proyek', Icons.add_circle, Color(0xFF166534)),
+    ItemHomepage('Logout', Icons.logout, Color(0xFFB91C1C)),
   ];
 
   @override
