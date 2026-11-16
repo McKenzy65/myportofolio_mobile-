@@ -1,102 +1,114 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:myportofolio_mobile/infocard.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/models/portfolio_profile.dart';
+import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
 
+/// Menu tetap stateless: identitas dan daftar aksi adalah data immutable.
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
-  final String npm = "2506616711";
-  final String nama = "Umar Faiz Rahman";
-  final String kelas = "PBP F";
-
-  static const List<ItemHomepage> items = [
-    ItemHomepage("Lihat Proyek", Icons.folder),
-    ItemHomepage("Tambah Proyek", Icons.add_circle),
-    ItemHomepage("Logout", Icons.logout),
+  static const items = [
+    ItemHomepage('Lihat Proyek', Icons.folder),
+    ItemHomepage('Tambah Proyek', Icons.add_circle),
+    ItemHomepage('Logout', Icons.logout),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold menyediakan struktur visual dasar halaman (AppBar, Body, SnackBar).
+    final theme = Theme.of(context);
     return Scaffold(
-      // AppBar menampilkan bar bagian atas halaman aplikasi.
       appBar: AppBar(
-        title: const Text(
-          'MyPortfolio',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: const Text('MyPortfolio'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
-      // Body halaman utama dengan padding di sekelilingnya.
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Baris horizontal untuk menampilkan 3 InfoCard secara sejajar.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: InfoCard(title: 'NPM', content: npm),
-                ),
-                Expanded(
-                  child: InfoCard(title: 'Name', content: nama),
-                ),
-                Expanded(
-                  child: InfoCard(title: 'Class', content: kelas),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16.0),
-
-            // Bagian tengah: pesan sambutan dan kisi tombol menu portofolio.
-            Center(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      'Selamat datang di MyPortfolio Mobile!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                  ),
-
-                  // GridView menampilkan kartu tombol dalam tata letak kisi 3 kolom.
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      // Sisakan ruang untuk label pada layar kecil atau font besar.
-                      final cardWidth = (constraints.maxWidth - 60) / 3;
-                      final textScale =
+                      final scale =
                           MediaQuery.textScalerOf(context).scale(14) / 14;
-                      return GridView.count(
-                        primary: false,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(20),
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        crossAxisCount: 3,
-                        mainAxisExtent: math.max(cardWidth, 160 * textScale),
-                        // Halaman menangani scroll, kisi mengikuti tinggi konten.
-                        shrinkWrap: true,
-                        children: items.map((ItemHomepage item) {
-                          return ItemCard(item);
-                        }).toList(),
+                      final columns =
+                          constraints.maxWidth >= 600 && scale <= 1.5 ? 3 : 1;
+                      final width =
+                          (constraints.maxWidth - (columns - 1) * 12) / columns;
+                      // Wrap membiarkan tinggi kartu mengikuti isi tanpa batas tinggi.
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          SizedBox(
+                            width: width,
+                            child: const InfoCard(
+                              title: 'NPM',
+                              content: PortfolioProfile.npm,
+                              icon: Icons.badge_outlined,
+                            ),
+                          ),
+                          SizedBox(
+                            width: width,
+                            child: const InfoCard(
+                              title: 'Name',
+                              content: PortfolioProfile.name,
+                              icon: Icons.person_outline,
+                            ),
+                          ),
+                          SizedBox(
+                            width: width,
+                            child: const InfoCard(
+                              title: 'Class',
+                              content: PortfolioProfile.className,
+                              icon: Icons.school_outlined,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Selamat datang di MyPortfolio Mobile!',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Ruang untuk proyek dan perjalanan belajar saya.',
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 24),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final scale =
+                          MediaQuery.textScalerOf(context).scale(14) / 14;
+                      final columns =
+                          constraints.maxWidth >= 600 && scale <= 1.5 ? 3 : 1;
+                      return GridView.count(
+                        crossAxisCount: columns,
+                        mainAxisExtent: 144 * scale,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        shrinkWrap: true,
+                        primary: false,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: items.map((item) => ItemCard(item)).toList(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
