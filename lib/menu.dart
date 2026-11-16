@@ -3,10 +3,13 @@ import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/models/portfolio_profile.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/item_card.dart';
+import 'package:myportofolio_mobile/widgets/copy_npm_button.dart';
 
 /// Menu tetap stateless: identitas dan daftar aksi adalah data immutable.
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({super.key, required this.onToggleTheme});
+
+  final VoidCallback onToggleTheme;
 
   static const items = [
     ItemHomepage('Lihat Proyek', Icons.folder, Color(0xFF1D4ED8)),
@@ -22,6 +25,20 @@ class MyHomePage extends StatelessWidget {
         title: const Text('MyPortfolio'),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
+        actions: [
+          IconButton(
+            tooltip: theme.brightness == Brightness.light
+                ? 'Aktifkan mode gelap'
+                : 'Aktifkan mode terang',
+            onPressed: onToggleTheme,
+            icon: Icon(
+              theme.brightness == Brightness.light
+                  ? Icons.dark_mode_outlined
+                  : Icons.light_mode_outlined,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -51,6 +68,7 @@ class MyHomePage extends StatelessWidget {
                               title: 'NPM',
                               content: PortfolioProfile.npm,
                               icon: Icons.badge_outlined,
+                              trailing: CopyNpmButton(),
                             ),
                           ),
                           SizedBox(

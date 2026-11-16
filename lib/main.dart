@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/menu.dart';
+import 'package:myportofolio_mobile/theme/app_theme.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
+/// State tema hidup di root; halaman menu tetap StatelessWidget sesuai Tugas 7.
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MyPortfolio',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          secondary: Colors.amber[700],
-        ),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _mode = ThemeMode.light;
+
+  void _toggleTheme() => setState(() {
+    _mode = _mode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+  });
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'MyPortfolio',
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
+    themeMode: _mode,
+    home: MyHomePage(onToggleTheme: _toggleTheme),
+  );
 }

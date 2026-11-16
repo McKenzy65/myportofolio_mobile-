@@ -32,7 +32,7 @@ class InfoCard extends StatelessWidget {
                 Icon(icon, color: theme.colorScheme.primary, size: 20),
                 const SizedBox(width: 8),
                 Expanded(child: Text(title, style: theme.textTheme.labelLarge)),
-                if (trailing != null) trailing!,
+                ?trailing,
               ],
             ),
             const SizedBox(height: 12),
