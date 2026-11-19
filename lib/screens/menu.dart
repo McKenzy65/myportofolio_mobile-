@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/models/portfolio_profile.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
-import 'package:myportofolio_mobile/widgets/item_card.dart';
+import 'package:myportofolio_mobile/widgets/project_card.dart';
 import 'package:myportofolio_mobile/widgets/copy_npm_button.dart';
 
 /// Menu tetap stateless: identitas dan daftar aksi adalah data immutable.

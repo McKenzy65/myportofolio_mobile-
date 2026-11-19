@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Kartu identitas yang mengikuti tema aplikasi dan pembesaran teks perangkat.
 class InfoCard extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tema dibangun sekali, bukan dihitung ulang setiap kali mode diganti.
 abstract final class AppTheme {
