@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
+import 'package:myportofolio_mobile/screens/project_form.dart';
 
 const _menuActions = ['Lihat Proyek', 'Tambah Proyek', 'Logout'];
 
@@ -23,6 +24,12 @@ Future<void> _tapMenuAction(WidgetTester tester, String action) async {
   // Let the message disappear before interacting with another menu card.
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
+  if (action == 'Tambah Proyek') {
+    expect(find.byType(ProjectFormPage), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
+  }
 }
 
 void main() {

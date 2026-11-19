@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/screens/project_form.dart';
 
 class ItemCard extends StatelessWidget {
   const ItemCard(this.item, {super.key});
@@ -23,6 +24,15 @@ class ItemCard extends StatelessWidget {
                 content: Text('Kamu telah menekan tombol ${item.name}!'),
               ),
             );
+          if (item.name == 'Tambah Proyek') {
+            Navigator.push<void>(
+              context,
+              MaterialPageRoute<void>(
+                settings: const RouteSettings(name: ProjectFormPage.routeName),
+                builder: (_) => const ProjectFormPage(),
+              ),
+            );
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

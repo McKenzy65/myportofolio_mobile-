@@ -130,7 +130,8 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const MyApp());
-    for (final action in _actions) {
+    // Tambah Proyek kini membuka layar lain; dua aksi ini tetap di menu.
+    for (final action in ['Lihat Proyek', 'Logout', 'Lihat Proyek', 'Logout']) {
       await tester.ensureVisible(find.text(action));
       await tester.pumpAndSettle();
       await tester.tap(find.text(action));
