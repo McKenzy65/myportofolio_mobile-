@@ -5,7 +5,12 @@ import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/widgets/project_card.dart';
 
-const _actions = ['Lihat Proyek', 'Tambah Proyek', 'Logout'];
+const _actions = [
+  'Lihat Proyek',
+  'Tambah Proyek',
+  'Tambah Sertifikasi',
+  'Logout',
+];
 
 Finder _message(String text) =>
     find.descendant(of: find.byType(SnackBar), matching: find.text(text));
@@ -32,12 +37,12 @@ void _expectReadableUniqueColors(WidgetTester tester) {
       Colors.white,
     );
   }
-  expect(colors.toSet(), hasLength(3));
+  expect(colors.toSet(), hasLength(_actions.length));
 }
 
 void main() {
   testWidgets(
-    'Menu tetap Stateless dan tiga aksi punya warna unik yang terbaca',
+    'Menu tetap Stateless dan semua aksi punya warna unik yang terbaca',
     (tester) async {
       await tester.pumpWidget(const MyApp());
       expect(tester.widget(find.byType(MyHomePage)), isA<StatelessWidget>());

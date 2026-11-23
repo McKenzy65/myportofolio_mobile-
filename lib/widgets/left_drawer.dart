@@ -1,14 +1,21 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/certification_form.dart';
 
 class LeftDrawer extends StatelessWidget {
-  const LeftDrawer({super.key});
+  const LeftDrawer({super.key, this.onBeforeNavigate});
 
-  void _open(BuildContext context, String destination) {
+  final Future<bool> Function()? onBeforeNavigate;
+
+  Future<void> _open(BuildContext context, String destination) async {
     final navigator = Navigator.of(context);
-    final current = ModalRoute.of(context)?.settings.name;
+    final owner = ModalRoute.of(context);
     Scaffold.of(context).closeDrawer();
-    if (current == destination) return;
+    if (owner?.settings.name == destination) return;
+    final confirm = onBeforeNavigate;
+    if (confirm != null && !await confirm()) return;
+    // Drawer dapat tertutup selama dialog terbuka. Periksa rute pemiliknya.
+    if (!navigator.mounted || owner?.isCurrent != true) return;
     if (destination == Navigator.defaultRouteName) {
       // Home becomes the root even if the form was opened over another Home.
       navigator.pushNamedAndRemoveUntil(destination, (_) => false);
@@ -60,6 +67,12 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Add Project'),
             selected: current == ProjectFormPage.routeName,
             onTap: () => _open(context, ProjectFormPage.routeName),
+          ),
+          ListTile(
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: const Text('Add Certification'),
+            selected: current == CertificationFormPage.routeName,
+            onTap: () => _open(context, CertificationFormPage.routeName),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/certification_form.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/theme/app_theme.dart';
 
@@ -28,6 +29,9 @@ class _MyAppState extends State<MyApp> {
     darkTheme: AppTheme.dark,
     themeMode: _mode,
     home: MyHomePage(onToggleTheme: _toggleTheme),
-    routes: {ProjectFormPage.routeName: (_) => const ProjectFormPage()},
+    routes: {
+      ProjectFormPage.routeName: (_) => const ProjectFormPage(),
+      CertificationFormPage.routeName: (_) => const CertificationFormPage(),
+    },
   );
 }

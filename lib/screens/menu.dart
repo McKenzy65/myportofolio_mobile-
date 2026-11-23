@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/models/portfolio_profile.dart';
+import 'package:myportofolio_mobile/screens/certification_form.dart';
+import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/project_card.dart';
@@ -14,7 +16,24 @@ class MyHomePage extends StatelessWidget {
 
   static const items = [
     ItemHomepage('Lihat Proyek', Icons.folder, Color(0xFF1D4ED8)),
-    ItemHomepage('Tambah Proyek', Icons.add_circle, Color(0xFF166534)),
+    ItemHomepage(
+      'Tambah Proyek',
+      Icons.add_circle,
+      Color(0xFF166534),
+      destination: (
+        routeName: ProjectFormPage.routeName,
+        page: ProjectFormPage(),
+      ),
+    ),
+    ItemHomepage(
+      'Tambah Sertifikasi',
+      Icons.workspace_premium,
+      Color(0xFF6B21A8),
+      destination: (
+        routeName: CertificationFormPage.routeName,
+        page: CertificationFormPage(),
+      ),
+    ),
     ItemHomepage('Logout', Icons.logout, Color(0xFFB91C1C)),
   ];
 
@@ -111,7 +130,11 @@ class MyHomePage extends StatelessWidget {
                       final scale =
                           MediaQuery.textScalerOf(context).scale(14) / 14;
                       final columns =
-                          constraints.maxWidth >= 600 && scale <= 1.5 ? 3 : 1;
+                          constraints.maxWidth >= 880 && scale <= 1.25
+                          ? 4
+                          : constraints.maxWidth >= 600 && scale <= 1.5
+                          ? 2
+                          : 1;
                       return GridView.count(
                         crossAxisCount: columns,
                         mainAxisExtent: 144 * scale,

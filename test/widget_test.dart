@@ -2,8 +2,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/main.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/certification_form.dart';
 
-const _menuActions = ['Lihat Proyek', 'Tambah Proyek', 'Logout'];
+const _menuActions = [
+  'Lihat Proyek',
+  'Tambah Proyek',
+  'Tambah Sertifikasi',
+  'Logout',
+];
 
 Future<void> _tapMenuAction(WidgetTester tester, String action) async {
   final button = find.text(action);
@@ -24,8 +30,11 @@ Future<void> _tapMenuAction(WidgetTester tester, String action) async {
   // Let the message disappear before interacting with another menu card.
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
-  if (action == 'Tambah Proyek') {
-    expect(find.byType(ProjectFormPage), findsOneWidget);
+  if (action == 'Tambah Proyek' || action == 'Tambah Sertifikasi') {
+    final pageType = action == 'Tambah Proyek'
+        ? ProjectFormPage
+        : CertificationFormPage;
+    expect(find.byType(pageType), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('Selamat datang di MyPortfolio Mobile!'), findsOneWidget);
@@ -54,7 +63,12 @@ void main() {
     ]) {
       expect(find.text(text), findsOneWidget);
     }
-    for (final icon in [Icons.folder, Icons.add_circle, Icons.logout]) {
+    for (final icon in [
+      Icons.folder,
+      Icons.add_circle,
+      Icons.workspace_premium,
+      Icons.logout,
+    ]) {
       expect(find.byIcon(icon), findsOneWidget);
     }
     expect(find.byType(FloatingActionButton), findsNothing);
