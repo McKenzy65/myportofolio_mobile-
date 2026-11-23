@@ -165,3 +165,23 @@ Kumpulkan **tautan commit hasil akhir** pada slot Tugas 7 di SCELE, bukan hanya 
 ## Penggunaan AI
 
 ChatGPT membantu membaca persyaratan, menyusun test, melakukan pemeriksaan, dan membuat draf jawaban reflektif. Rincian prompt, bagian yang dibantu, keterbatasan, dan koreksi tercatat dalam [log bantuan AI](docs/ai-assistance-tugas-7.md).
+
+### Tugas 8
+
+1. **Bagaimana formulir dibuka dan bagaimana kembali ke Home?** Kartu **Tambah Sertifikasi** memakai `Navigator.push()` untuk meletakkan formulir di atas Home. Saat formulir ditutup dengan Back, `Navigator.pop()` melepas rute teratas sehingga Home terlihat lagi. `pushReplacement()` mengganti rute teratas. Drawer memakai bentuk bernama, `pushReplacementNamed()`, saat berpindah antarformulir. Khusus **Home**, drawer memanggil `pushNamedAndRemoveUntil('/', (_) => false)`. Setelah itu Home menjadi satu-satunya rute sehingga Back tidak membuka formulir lama.
+
+2. **Apa yang membuat struktur halaman konsisten?** Pada Home dan formulir, `Scaffold` menempatkan judul di `AppBar`, isi di `body`, dan menu di `drawer`. Keduanya memasang `LeftDrawer` yang sama dengan pilihan **Home**, **Add Project**, dan **Add Certification**. Latar AppBar mengambil `colorScheme.primary` dan judul mengambil `onPrimary`. Saat tema diubah di Home, pasangan warna ini ikut berubah di formulir.
+
+3. **Mengapa tata letaknya bisa dipakai di ponsel?** Formulir mengurutkan judul, deskripsi, tahun, status unggulan, dan tombol **Simpan** secara vertikal. `Padding` memberi ruang di tepi dan `SizedBox` memberi jarak antarkolom sehingga pesan kesalahan terbaca bersama kolom yang sesuai. Ketika papan ketik mengurangi tinggi layar, `SingleChildScrollView` memungkinkan pengguna menggulir sampai tombol. Di layar lebar, `ConstrainedBox` membatasi lebar formulir menjadi 640 piksel logis agar kolom tetap mudah dibaca.
+
+4. **Apa yang terjadi saat Simpan ditekan?** `GlobalKey<FormState>` memberi tombol akses ke `FormState` milik formulir ini. Pemanggilan `validate()` menjalankan setiap `validator`. Contohnya, menempelkan `20.5` pada Tahun menampilkan kesalahan di kolom tersebut. Papan ketik angka membantu pengetikan, tetapi pengguna masih bisa menempelkan teks. Ketika semua kolom valid, `showDialog()` membuka `AlertDialog` berisi judul, deskripsi, tahun, dan pilihan unggulan. **Tutup** menutup dialog dan mengembalikan pengguna ke isian yang sama.
+
+Di versi ini, Home berada di [lib/screens/menu.dart](lib/screens/menu.dart). Dari [formulir Sertifikasi](lib/screens/certification_form.dart), kamu bisa menelusuri [validator](lib/utils/form_validators.dart) dan [drawer bersama](lib/widgets/left_drawer.dart).
+
+
+
+#### Progres dan penggunaan AI
+
+Tugas 7 menambahkan halaman identitas serta kartu aksi. Tutorial 09 menambahkan formulir proyek dan drawer. Tugas 8 melanjutkannya dengan formulir sertifikasi, navigasi dari dua tempat, ringkasan tervalidasi, lalu pratinjau dan konfirmasi sebelum meninggalkan draf. Aturan judul dan tahun berada di `FormValidators`. Pratinjau memakai pemeriksaan tahun yang sama dengan tombol **Simpan**.
+
+Codex membantu mengadaptasi kode sertifikasi dari cadangan lokal ke struktur Tutorial 09 saat ini, menyunting widget dan test. Koreksi lingkup oleh pemilik proyek dan koreksi teknis oleh asisten dirinci dalam [log prompt dan penggunaan AI Tugas 8](docs/ai-assistance-tugas-8.md).
