@@ -34,6 +34,26 @@ Future<void> _fillRequired(WidgetTester tester) async {
 
 void main() {
   testWidgets(
+    'Validasi mulai setelah Simpan dan hilang saat input diperbaiki',
+    (tester) async {
+      await _openForm(tester);
+      await _fillRequired(tester);
+      await _enter(tester, 'certification-year', '-1');
+      expect(_hasError(tester, 'certification-year'), isFalse);
+      await _save(tester);
+      expect(_hasError(tester, 'certification-year'), isTrue);
+      await _enter(tester, 'certification-year', '2026');
+      expect(_hasError(tester, 'certification-year'), isFalse);
+      expect(find.byType(AlertDialog), findsNothing);
+      await _enter(tester, 'certification-title', '   ');
+      expect(_hasError(tester, 'certification-title'), isTrue);
+      await _enter(tester, 'certification-title', 'Judul diperbaiki');
+      expect(_hasError(tester, 'certification-title'), isFalse);
+      expect(find.byType(AlertDialog), findsNothing);
+    },
+  );
+
+  testWidgets(
     'Ringkasan memuat semua nilai terbaru dan Tutup mempertahankan isian',
     (tester) async {
       await _openForm(tester);

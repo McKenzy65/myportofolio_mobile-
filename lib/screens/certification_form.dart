@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/utils/form_validators.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/certification_preview.dart';
+import 'package:myportofolio_mobile/widgets/unsaved_form_guard.dart';
 
 class CertificationFormPage extends StatefulWidget {
   const CertificationFormPage({super.key});
@@ -19,8 +20,36 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
   final _year = TextEditingController();
   late final _textChanges = Listenable.merge([_title, _description, _year]);
   bool _isHighlight = false;
+  bool _hasDraft = false;
+  bool _drawerOpen = false;
+  bool _validationAttempted = false;
+
+  bool get _containsDraft =>
+      _title.text.isNotEmpty ||
+      _description.text.isNotEmpty ||
+      _year.text.isNotEmpty ||
+      _isHighlight;
+
+  @override
+  void initState() {
+    super.initState();
+    _textChanges.addListener(_updateDraftState);
+  }
+
+  void _updateDraftState() {
+    // Rebuild penjaga navigasi hanya ketika status kosong/terisi berubah.
+    // Perubahan teks lainnya diperbarui oleh listener pratinjau/counter saja.
+    if (_hasDraft != _containsDraft) {
+      setState(() => _hasDraft = _containsDraft);
+    }
+  }
 
   Future<void> _submit() async {
+    // Jangan tampilkan error sebelum pengguna mencoba Simpan. Sesudahnya,
+    // perbaikan input langsung memperbarui pesan tanpa perlu Simpan ulang.
+    if (!_validationAttempted) {
+      setState(() => _validationAttempted = true);
+    }
     // Semua validator dijalankan sebelum ringkasan dibuat.
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
@@ -57,6 +86,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
 
   @override
   void dispose() {
+    _textChanges.removeListener(_updateDraftState);
     _title.dispose();
     _description.dispose();
     _year.dispose();
@@ -65,122 +95,132 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: const Text(
-          'Tambah Sertifikasi',
-          overflow: TextOverflow.ellipsis,
+    return UnsavedFormGuard(
+      hasChanges: _hasDraft,
+      drawerOpen: _drawerOpen,
+      builder: (context, confirmLeave) => Scaffold(
+        onDrawerChanged: (open) => setState(() => _drawerOpen = open),
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          title: const Text(
+            'Tambah Sertifikasi',
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-      ),
-      drawer: const LeftDrawer(),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Lengkapi informasi sertifikasi dan pilih apakah ingin menjadikannya unggulan.',
-                    ),
-                    const SizedBox(height: 20),
-                    ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _title,
-                      builder: (context, value, child) => TextFormField(
-                        key: const Key('certification-title'),
-                        controller: _title,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: 'Judul Sertifikasi',
-                          helperText:
-                              'Maksimal ${FormValidators.certificationTitleLimit} karakter.',
-                          errorMaxLines: 3,
-                          // Ikuti hitungan Unicode setelah trim pada validator.
-                          // Input tidak dipotong agar kesalahan tetap bisa dijelaskan.
-                          counterText:
-                              '${value.text.trim().runes.length}/${FormValidators.certificationTitleLimit}',
-                          counterStyle:
-                              value.text.trim().runes.length >
-                                  FormValidators.certificationTitleLimit
-                              ? TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                )
-                              : null,
+        drawer: LeftDrawer(onBeforeNavigate: confirmLeave),
+        body: SafeArea(
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _validationAttempted
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Lengkapi informasi sertifikasi dan pilih apakah ingin menjadikannya unggulan.',
+                      ),
+                      const SizedBox(height: 20),
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _title,
+                        builder: (context, value, child) => TextFormField(
+                          key: const Key('certification-title'),
+                          controller: _title,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: 'Judul Sertifikasi',
+                            helperText:
+                                'Maksimal ${FormValidators.certificationTitleLimit} karakter.',
+                            errorMaxLines: 3,
+                            // Ikuti hitungan Unicode setelah trim pada validator.
+                            // Input tidak dipotong agar kesalahan tetap bisa dijelaskan.
+                            counterText:
+                                '${value.text.trim().runes.length}/${FormValidators.certificationTitleLimit}',
+                            counterStyle:
+                                value.text.trim().runes.length >
+                                    FormValidators.certificationTitleLimit
+                                ? TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  )
+                                : null,
+                          ),
+                          textInputAction: TextInputAction.next,
+                          validator: (value) => FormValidators.requiredText(
+                            value,
+                            'Judul sertifikasi',
+                            maxLength: FormValidators.certificationTitleLimit,
+                          ),
                         ),
-                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('certification-description'),
+                        controller: _description,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Deskripsi Sertifikasi',
+                          errorMaxLines: 3,
+                        ),
+                        keyboardType: TextInputType.multiline,
+                        minLines: 3,
+                        maxLines: 5,
                         validator: (value) => FormValidators.requiredText(
                           value,
-                          'Judul sertifikasi',
-                          maxLength: FormValidators.certificationTitleLimit,
+                          'Deskripsi sertifikasi',
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('certification-description'),
-                      controller: _description,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Deskripsi Sertifikasi',
-                        errorMaxLines: 3,
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('certification-year'),
+                        controller: _year,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Tahun Sertifikasi',
+                          hintText: 'Contoh: 2026',
+                          errorMaxLines: 3,
+                        ),
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.done,
+                        validator: FormValidators.certificationYear,
                       ),
-                      keyboardType: TextInputType.multiline,
-                      minLines: 3,
-                      maxLines: 5,
-                      validator: (value) => FormValidators.requiredText(
-                        value,
-                        'Deskripsi sertifikasi',
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        key: const Key('certification-highlight'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Sertifikasi unggulan'),
+                        subtitle: const Text(
+                          'Tandai sertifikasi yang ingin ditonjolkan.',
+                        ),
+                        value: _isHighlight,
+                        onChanged: (value) => setState(() {
+                          _isHighlight = value;
+                          _hasDraft = _containsDraft;
+                        }),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      key: const Key('certification-year'),
-                      controller: _year,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Tahun Sertifikasi',
-                        hintText: 'Contoh: 2026',
-                        errorMaxLines: 3,
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: _submit,
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Simpan'),
                       ),
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.done,
-                      validator: FormValidators.certificationYear,
-                    ),
-                    const SizedBox(height: 16),
-                    SwitchListTile(
-                      key: const Key('certification-highlight'),
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Sertifikasi unggulan'),
-                      subtitle: const Text(
-                        'Tandai sertifikasi yang ingin ditonjolkan.',
+                      const SizedBox(height: 24),
+                      ListenableBuilder(
+                        listenable: _textChanges,
+                        builder: (context, child) => CertificationPreview(
+                          title: _title.text,
+                          description: _description.text,
+                          year: _year.text,
+                          isHighlight: _isHighlight,
+                        ),
                       ),
-                      value: _isHighlight,
-                      onChanged: (value) =>
-                          setState(() => _isHighlight = value),
-                    ),
-                    const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: _submit,
-                      icon: const Icon(Icons.save_outlined),
-                      label: const Text('Simpan'),
-                    ),
-                    const SizedBox(height: 24),
-                    ListenableBuilder(
-                      listenable: _textChanges,
-                      builder: (context, child) => CertificationPreview(
-                        title: _title.text,
-                        description: _description.text,
-                        year: _year.text,
-                        isHighlight: _isHighlight,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
