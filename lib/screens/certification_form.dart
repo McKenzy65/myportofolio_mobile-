@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/utils/form_validators.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/certification_preview.dart';
 
 class CertificationFormPage extends StatefulWidget {
   const CertificationFormPage({super.key});
@@ -16,6 +17,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
   final _title = TextEditingController();
   final _description = TextEditingController();
   final _year = TextEditingController();
+  late final _textChanges = Listenable.merge([_title, _description, _year]);
   bool _isHighlight = false;
 
   Future<void> _submit() async {
@@ -88,19 +90,35 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       'Lengkapi informasi sertifikasi dan pilih apakah ingin menjadikannya unggulan.',
                     ),
                     const SizedBox(height: 20),
-                    TextFormField(
-                      key: const Key('certification-title'),
-                      controller: _title,
-                      decoration: const InputDecoration(
-                        labelText: 'Judul Sertifikasi',
-                        helperText: 'Maksimal 255 karakter.',
-                        errorMaxLines: 3,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      validator: (value) => FormValidators.requiredText(
-                        value,
-                        'Judul sertifikasi',
-                        maxLength: FormValidators.certificationTitleLimit,
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _title,
+                      builder: (context, value, child) => TextFormField(
+                        key: const Key('certification-title'),
+                        controller: _title,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: 'Judul Sertifikasi',
+                          helperText:
+                              'Maksimal ${FormValidators.certificationTitleLimit} karakter.',
+                          errorMaxLines: 3,
+                          // Ikuti hitungan Unicode setelah trim pada validator.
+                          // Input tidak dipotong agar kesalahan tetap bisa dijelaskan.
+                          counterText:
+                              '${value.text.trim().runes.length}/${FormValidators.certificationTitleLimit}',
+                          counterStyle:
+                              value.text.trim().runes.length >
+                                  FormValidators.certificationTitleLimit
+                              ? TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                )
+                              : null,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        validator: (value) => FormValidators.requiredText(
+                          value,
+                          'Judul sertifikasi',
+                          maxLength: FormValidators.certificationTitleLimit,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -108,6 +126,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       key: const Key('certification-description'),
                       controller: _description,
                       decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                         labelText: 'Deskripsi Sertifikasi',
                         errorMaxLines: 3,
                       ),
@@ -124,6 +143,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       key: const Key('certification-year'),
                       controller: _year,
                       decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                         labelText: 'Tahun Sertifikasi',
                         hintText: 'Contoh: 2026',
                         errorMaxLines: 3,
@@ -149,6 +169,16 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       onPressed: _submit,
                       icon: const Icon(Icons.save_outlined),
                       label: const Text('Simpan'),
+                    ),
+                    const SizedBox(height: 24),
+                    ListenableBuilder(
+                      listenable: _textChanges,
+                      builder: (context, child) => CertificationPreview(
+                        title: _title.text,
+                        description: _description.text,
+                        year: _year.text,
+                        isHighlight: _isHighlight,
+                      ),
                     ),
                   ],
                 ),
