@@ -2,10 +2,16 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 
+import 'portfolio_test_app.dart';
+
 Finder _field(String key) => find.byKey(ValueKey(key));
 
 Future<void> _openProject(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: ProjectFormPage()));
+  await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
+  tester
+      .state<NavigatorState>(find.byType(Navigator))
+      .pushNamed(ProjectFormPage.routeName);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _enter(WidgetTester tester, String key, String value) async {
@@ -52,21 +58,31 @@ void main() {
     }
   });
 
-  testWidgets('Teknologi dan tautan opsional; kategori awal Web Development', (
-    tester,
-  ) async {
-    await _openProject(tester);
-    await _enter(tester, 'project-name', 'Portofolio');
-    await _enter(tester, 'project-description', 'Proyek pribadi');
-    await _save(tester);
-    expect(find.text('Proyek berhasil ditambahkan!'), findsOneWidget);
-    expect(find.text('Teknologi: -'), findsOneWidget);
-    expect(find.text('Tautan: -'), findsOneWidget);
-    expect(find.text('Kategori: Web Development'), findsOneWidget);
-  });
+  testWidgets(
+    'Teknologi dan URL proyek wajib; URL gambar opsional dan tervalidasi',
+    (tester) async {
+      await _openProject(tester);
+      await _enter(tester, 'project-name', 'Portofolio');
+      await _enter(tester, 'project-description', 'Proyek pribadi');
+      await _enter(tester, 'project-link', 'ftp://example.org');
+      await _enter(tester, 'project-image', 'bukan url');
+      await _save(tester);
+      for (final key in [
+        'project-technologies',
+        'project-link',
+        'project-image',
+      ]) {
+        expect(
+          tester.state<FormFieldState<String>>(_field(key)).hasError,
+          isTrue,
+        );
+      }
+      expect(find.byType(AlertDialog), findsNothing);
+    },
+  );
 
   testWidgets(
-    'Dialog memuat lima nilai dan OK mereset semua input serta kategori',
+    'Dialog respons server memuat lima nilai dan OK mereset semua input',
     (tester) async {
       await _openProject(tester);
       await _enter(tester, 'project-name', '  Portofolio Umar  ');
@@ -75,11 +91,6 @@ void main() {
         'project-description',
         '  Situs portofolio pribadi  ',
       );
-      await tester.ensureVisible(_field('project-category'));
-      await tester.tap(_field('project-category'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Other').last);
-      await tester.pumpAndSettle();
       await _enter(tester, 'project-technologies', 'Dart, Flutter');
       await _enter(tester, 'project-link', 'https://example.com/portfolio');
       await _save(tester);
@@ -87,9 +98,9 @@ void main() {
       for (final value in [
         'Nama Proyek: Portofolio Umar',
         'Deskripsi: Situs portofolio pribadi',
-        'Kategori: Other',
+        'URL Gambar: -',
         'Teknologi: Dart, Flutter',
-        'Tautan: https://example.com/portfolio',
+        'URL Proyek: https://example.com/portfolio',
       ]) {
         expect(
           find.descendant(
@@ -110,10 +121,6 @@ void main() {
       ]) {
         expect(_value(tester, key), isEmpty);
       }
-      expect(
-        tester.state<FormFieldState<String>>(_field('project-category')).value,
-        'Web Development',
-      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -134,6 +141,8 @@ void main() {
       await tester.pumpAndSettle();
       await _enter(tester, 'project-name', 'Portofolio');
       await _enter(tester, 'project-description', 'Proyek pribadi');
+      await _enter(tester, 'project-technologies', 'Dart');
+      await _enter(tester, 'project-link', 'https://example.org');
       await tester.ensureVisible(find.text('Save'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

@@ -29,6 +29,7 @@ class MyHomePage extends StatelessWidget {
       'Tambah Proyek',
       Icons.add_circle,
       Color(0xFF166534),
+      action: MenuAction.navigateAfterLogin,
       destination: (
         routeName: ProjectFormPage.routeName,
         page: ProjectFormPage(),
@@ -43,7 +44,12 @@ class MyHomePage extends StatelessWidget {
         page: CertificationFormPage(),
       ),
     ),
-    ItemHomepage('Logout', Icons.logout, Color(0xFFB91C1C)),
+    ItemHomepage(
+      'Logout',
+      Icons.logout,
+      Color(0xFFB91C1C),
+      action: MenuAction.logout,
+    ),
   ];
 
   @override

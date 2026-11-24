@@ -1,13 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:myportofolio_mobile/main.dart';
+
+import 'portfolio_test_app.dart';
+
 import 'package:myportofolio_mobile/screens/project_form.dart';
 
 void main() {
   testWidgets(
     'Drawer berpindah halaman tanpa menumpuk rute atau mereset halaman aktif',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       Future<void> select(String label) async {
         await tester.tap(find.byTooltip('Open navigation menu'));

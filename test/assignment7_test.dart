@@ -147,7 +147,7 @@ void main() {
     await tester.ensureVisible(find.text('Logout'));
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
-    expect(_message('Kamu telah menekan tombol Logout!'), findsOneWidget);
+    expect(_message('Kamu belum login.'), findsOneWidget);
     expect(_message('Kamu telah menekan tombol Lihat Proyek!'), findsNothing);
     expect(_message('Kamu telah menekan tombol Tambah Proyek!'), findsNothing);
     expect(tester.takeException(), isNull);

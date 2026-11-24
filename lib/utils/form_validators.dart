@@ -12,6 +12,21 @@ abstract final class FormValidators {
     return null;
   }
 
+  static String? projectUrl(String? value, {bool optional = false}) {
+    final text = value?.trim() ?? '';
+    if (optional && text.isEmpty) return null;
+    if (text.isEmpty) return 'URL proyek wajib diisi.';
+    final uri = Uri.tryParse(text);
+    if (text.runes.length > 2048 ||
+        RegExp(r'\s').hasMatch(text) ||
+        uri == null ||
+        !(uri.scheme == 'https' || uri.scheme == 'http') ||
+        uri.host.isEmpty) {
+      return 'Masukkan URL http atau https yang valid (maksimal 2048 karakter).';
+    }
+    return null;
+  }
+
   /// Django menyimpan tahun sebagai PositiveIntegerField, termasuk nilai nol.
   static String? certificationYear(String? value) {
     final missing = requiredText(value, 'Tahun');

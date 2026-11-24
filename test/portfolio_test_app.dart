@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:myportofolio_mobile/main.dart';
@@ -34,4 +37,16 @@ MyApp portfolioTestApp({
   final api = ApiClient(client: MockClient(handle));
   addTearDown(api.close);
   return MyApp(apiClient: api, initialToken: token);
+}
+
+Widget portfolioTestScreen(Widget screen, {ApiClient? client}) {
+  final api = client ?? ApiClient(client: MockClient(portfolioResponse));
+  if (client == null) addTearDown(api.close);
+  return MultiProvider(
+    providers: [
+      Provider<ApiClient>.value(value: api),
+      ChangeNotifierProvider(create: (_) => AuthState(api)),
+    ],
+    child: MaterialApp(home: screen),
+  );
 }

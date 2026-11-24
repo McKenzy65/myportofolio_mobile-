@@ -1,11 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'portfolio_test_app.dart';
+
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 
 Finder _field(String key) => find.byKey(ValueKey(key));
 
 Future<void> _openForm(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: CertificationFormPage()));
+  await tester.pumpWidget(portfolioTestScreen(const CertificationFormPage()));
 }
 
 Future<void> _enter(WidgetTester tester, String key, String value) async {

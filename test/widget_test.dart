@@ -24,7 +24,11 @@ Future<void> _tapMenuAction(WidgetTester tester, String action) async {
   expect(
     find.descendant(
       of: find.byType(SnackBar),
-      matching: find.text('Kamu telah menekan tombol $action!'),
+      matching: find.text(
+        action == 'Logout'
+            ? 'Kamu berhasil logout.'
+            : 'Kamu telah menekan tombol $action!',
+      ),
     ),
     findsOneWidget,
   );

@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: _mode,
       home: MyHomePage(onToggleTheme: _toggleTheme),
       routes: {
-        ProjectFormPage.routeName: (_) => const ProjectFormPage(),
+        ProjectFormPage.routeName: (_) => const ProjectFormEntry(),
         ProjectListScreen.routeName: (_) => const ProjectListScreen(),
         CertificationFormPage.routeName: (_) => const CertificationFormPage(),
       },

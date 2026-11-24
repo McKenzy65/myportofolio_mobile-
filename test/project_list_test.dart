@@ -7,7 +7,8 @@ import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
-import 'package:provider/provider.dart';
+
+import 'portfolio_test_app.dart';
 
 void main() {
   testWidgets(
@@ -39,10 +40,7 @@ void main() {
       );
       addTearDown(api.close);
       await tester.pumpWidget(
-        Provider.value(
-          value: api,
-          child: const MaterialApp(home: ProjectListScreen()),
-        ),
+        portfolioTestScreen(const ProjectListScreen(), client: api),
       );
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       await tester.pump();

@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myportofolio_mobile/main.dart';
+
+import 'portfolio_test_app.dart';
+
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 
@@ -29,7 +31,7 @@ void main() {
   testWidgets('Kartu sertifikasi membuka form dan Back kembali ke Home', (
     tester,
   ) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
     await _openCertificationCard(tester);
     expect(find.byType(CertificationFormPage), findsOneWidget);
     expect(_navigator(tester).canPop(), isTrue);
@@ -44,7 +46,7 @@ void main() {
   testWidgets(
     'Drawer menandai halaman aktif dan tetap menghubungkan kedua form',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
       await _chooseDrawer(tester, 'Add Certification');
       expect(find.byType(CertificationFormPage), findsOneWidget);
       expect(_navigator(tester).canPop(), isFalse);
@@ -88,7 +90,7 @@ void main() {
   testWidgets(
     'Home dari form yang dibuka lewat kartu membersihkan tumpukan rute',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
       await _openCertificationCard(tester);
       expect(_navigator(tester).canPop(), isTrue);
       await _chooseDrawer(tester, 'Home');

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 
 class ItemCard extends StatelessWidget {
   const ItemCard(this.item, {super.key});
@@ -14,7 +15,18 @@ class ItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          if (item.action == MenuAction.logout) {
+            await logoutWithFeedback(context);
+            return;
+          }
+          if (item.action == MenuAction.navigateAfterLogin &&
+              !await ensureLoggedIn(context)) {
+            return;
+          }
+          if (!context.mounted || ModalRoute.of(context)?.isCurrent != true) {
+            return;
+          }
           // Satu pesan terbaru: ketukan cepat tidak mengantrekan SnackBar lama.
           ScaffoldMessenger.of(context)
             ..removeCurrentSnackBar()
