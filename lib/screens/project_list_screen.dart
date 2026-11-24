@@ -24,7 +24,9 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   Future<void> _reload() async {
     final next = context.read<ApiClient>().getProjects();
-    setState(() => _projects = next);
+    setState(() {
+      _projects = next;
+    });
     // FutureBuilder menampilkan error sekaligus menyediakan tombol coba lagi.
     await next.then<void>((_) {}, onError: (Object _) {});
   }
