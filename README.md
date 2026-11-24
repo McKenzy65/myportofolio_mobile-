@@ -8,8 +8,11 @@ Lingkungan pengembangan: Flutter **3.47.9**, Dart **3.13.7**. Pasang dependency 
 
 ```powershell
 flutter pub get
-flutter run -d chrome
+dart run build_runner build
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
 ```
+
+Untuk mencoba daftar proyek dan login, jalankan backend Django di terminal terpisah dengan `python manage.py migrate` dan `python manage.py runserver` dari folder `portofolio`.
 
 Pemeriksaan kode dan build:
 
