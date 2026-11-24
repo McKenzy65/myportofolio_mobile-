@@ -3,6 +3,7 @@ import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/models/portfolio_profile.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
 import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/project_card.dart';
@@ -15,7 +16,15 @@ class MyHomePage extends StatelessWidget {
   final VoidCallback onToggleTheme;
 
   static const items = [
-    ItemHomepage('Lihat Proyek', Icons.folder, Color(0xFF1D4ED8)),
+    ItemHomepage(
+      'Lihat Proyek',
+      Icons.folder,
+      Color(0xFF1D4ED8),
+      destination: (
+        routeName: ProjectListScreen.routeName,
+        page: ProjectListScreen(),
+      ),
+    ),
     ItemHomepage(
       'Tambah Proyek',
       Icons.add_circle,

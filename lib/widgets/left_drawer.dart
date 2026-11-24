@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 
 class LeftDrawer extends StatelessWidget {
@@ -61,6 +62,12 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Home'),
             selected: current == Navigator.defaultRouteName,
             onTap: () => _open(context, Navigator.defaultRouteName),
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_outlined),
+            title: const Text('Projects'),
+            selected: current == ProjectListScreen.routeName,
+            onTap: () => _open(context, ProjectListScreen.routeName),
           ),
           ListTile(
             leading: const Icon(Icons.add_circle_outline),

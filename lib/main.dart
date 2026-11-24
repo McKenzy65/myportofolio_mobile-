@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/services/api_client.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/theme/app_theme.dart';
@@ -53,6 +54,7 @@ class _MyAppState extends State<MyApp> {
       home: MyHomePage(onToggleTheme: _toggleTheme),
       routes: {
         ProjectFormPage.routeName: (_) => const ProjectFormPage(),
+        ProjectListScreen.routeName: (_) => const ProjectListScreen(),
         CertificationFormPage.routeName: (_) => const CertificationFormPage(),
       },
     ),

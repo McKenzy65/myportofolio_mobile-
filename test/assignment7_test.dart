@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myportofolio_mobile/main.dart';
+
+import 'portfolio_test_app.dart';
+
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/widgets/project_card.dart';
 
@@ -44,7 +46,7 @@ void main() {
   testWidgets(
     'Menu tetap Stateless dan semua aksi punya warna unik yang terbaca',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp());
       expect(tester.widget(find.byType(MyHomePage)), isA<StatelessWidget>());
       _expectReadableUniqueColors(tester);
       expect(tester.takeException(), isNull);
@@ -54,7 +56,7 @@ void main() {
   testWidgets(
     'Mode gelap dan terang berganti tanpa menghilangkan identitas atau aksi',
     (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp());
       Brightness brightness() =>
           Theme.of(tester.element(find.byType(MyHomePage))).brightness;
       expect(brightness(), Brightness.light);
@@ -73,6 +75,8 @@ void main() {
         _message('Kamu telah menekan tombol Lihat Proyek!'),
         findsOneWidget,
       );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Aktifkan mode terang'));
       await tester.pumpAndSettle();
       expect(brightness(), Brightness.light);
@@ -97,7 +101,7 @@ void main() {
     addTearDown(
       () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
     );
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(portfolioTestApp());
     await tester.ensureVisible(find.byTooltip('Salin NPM'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Salin NPM'));
@@ -121,7 +125,7 @@ void main() {
     addTearDown(
       () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
     );
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(portfolioTestApp());
     await tester.ensureVisible(find.byTooltip('Salin NPM'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Salin NPM'));
@@ -134,14 +138,14 @@ void main() {
   testWidgets('Ketukan aksi berurutan menampilkan pesan aksi terakhir', (
     tester,
   ) async {
-    await tester.pumpWidget(const MyApp());
-    // Tambah Proyek kini membuka layar lain; dua aksi ini tetap di menu.
-    for (final action in ['Lihat Proyek', 'Logout', 'Lihat Proyek', 'Logout']) {
-      await tester.ensureVisible(find.text(action));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(action));
-      await tester.pump(const Duration(milliseconds: 50));
-    }
+    await tester.pumpWidget(portfolioTestApp());
+    await tester.ensureVisible(find.text('Lihat Proyek'));
+    await tester.tap(find.text('Lihat Proyek'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Logout'));
+    await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
     expect(_message('Kamu telah menekan tombol Logout!'), findsOneWidget);
     expect(_message('Kamu telah menekan tombol Lihat Proyek!'), findsNothing);

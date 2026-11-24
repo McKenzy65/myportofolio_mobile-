@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myportofolio_mobile/main.dart';
+
+import 'portfolio_test_app.dart';
+
+import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
 
@@ -30,10 +33,12 @@ Future<void> _tapMenuAction(WidgetTester tester, String action) async {
   // Let the message disappear before interacting with another menu card.
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
-  if (action == 'Tambah Proyek' || action == 'Tambah Sertifikasi') {
-    final pageType = action == 'Tambah Proyek'
-        ? ProjectFormPage
-        : CertificationFormPage;
+  if (action != 'Logout') {
+    final pageType = switch (action) {
+      'Lihat Proyek' => ProjectListScreen,
+      'Tambah Proyek' => ProjectFormPage,
+      _ => CertificationFormPage,
+    };
     expect(find.byType(pageType), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
@@ -45,7 +50,7 @@ void main() {
   testWidgets('Halaman awal menampilkan identitas dan menu portofolio', (
     tester,
   ) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
 
     expect(
       find.descendant(
@@ -77,7 +82,7 @@ void main() {
 
   for (final action in _menuActions) {
     testWidgets('$action menampilkan SnackBar yang sesuai', (tester) async {
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
       await _tapMenuAction(tester, action);
     });
   }
@@ -97,7 +102,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-        await tester.pumpWidget(const MyApp());
+        await tester.pumpWidget(portfolioTestApp(token: 'test-session'));
         expect(tester.takeException(), isNull);
         for (final action in _menuActions) {
           await _tapMenuAction(tester, action);
