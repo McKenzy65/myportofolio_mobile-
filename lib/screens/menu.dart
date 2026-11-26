@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/models/item_homepage.dart';
 import 'package:myportofolio_mobile/models/portfolio_profile.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
+import 'package:myportofolio_mobile/screens/certification_list_screen.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/widgets/info_card.dart';
@@ -33,6 +34,15 @@ class MyHomePage extends StatelessWidget {
       destination: (
         routeName: ProjectFormPage.routeName,
         page: ProjectFormPage(),
+      ),
+    ),
+    ItemHomepage(
+      'Lihat Sertifikasi',
+      Icons.collections_bookmark_outlined,
+      Color(0xFF155E75),
+      destination: (
+        routeName: CertificationListScreen.routeName,
+        page: CertificationListScreen(),
       ),
     ),
     ItemHomepage(
@@ -146,7 +156,7 @@ class MyHomePage extends StatelessWidget {
                           MediaQuery.textScalerOf(context).scale(14) / 14;
                       final columns =
                           constraints.maxWidth >= 880 && scale <= 1.25
-                          ? 4
+                          ? 3
                           : constraints.maxWidth >= 600 && scale <= 1.5
                           ? 2
                           : 1;

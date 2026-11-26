@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
+import 'package:myportofolio_mobile/screens/certification_list_screen.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:provider/provider.dart';
@@ -105,6 +106,12 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Add Project'),
             selected: current == ProjectFormPage.routeName,
             onTap: () => _open(context, ProjectFormPage.routeName),
+          ),
+          ListTile(
+            leading: const Icon(Icons.collections_bookmark_outlined),
+            title: const Text('Certifications'),
+            selected: current == CertificationListScreen.routeName,
+            onTap: () => _open(context, CertificationListScreen.routeName),
           ),
           ListTile(
             leading: const Icon(Icons.workspace_premium_outlined),

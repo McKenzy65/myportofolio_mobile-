@@ -6,10 +6,12 @@ import 'portfolio_test_app.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
+import 'package:myportofolio_mobile/screens/certification_list_screen.dart';
 
 const _menuActions = [
   'Lihat Proyek',
   'Tambah Proyek',
+  'Lihat Sertifikasi',
   'Tambah Sertifikasi',
   'Logout',
 ];
@@ -41,6 +43,7 @@ Future<void> _tapMenuAction(WidgetTester tester, String action) async {
     final pageType = switch (action) {
       'Lihat Proyek' => ProjectListScreen,
       'Tambah Proyek' => ProjectFormPage,
+      'Lihat Sertifikasi' => CertificationListScreen,
       _ => CertificationFormPage,
     };
     expect(find.byType(pageType), findsOneWidget);
@@ -75,6 +78,7 @@ void main() {
     for (final icon in [
       Icons.folder,
       Icons.add_circle,
+      Icons.collections_bookmark_outlined,
       Icons.workspace_premium,
       Icons.logout,
     ]) {

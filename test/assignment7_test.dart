@@ -10,6 +10,7 @@ import 'package:myportofolio_mobile/widgets/project_card.dart';
 const _actions = [
   'Lihat Proyek',
   'Tambah Proyek',
+  'Lihat Sertifikasi',
   'Tambah Sertifikasi',
   'Logout',
 ];

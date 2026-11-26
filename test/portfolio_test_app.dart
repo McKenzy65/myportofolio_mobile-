@@ -11,6 +11,17 @@ import 'package:myportofolio_mobile/services/api_client.dart';
 
 Future<http.Response> portfolioResponse(http.Request request) async {
   return switch ((request.method, request.url.path)) {
+    ('GET', '/api/v1/certifications/') => http.Response('[]', 200),
+    ('POST', '/api/v1/certifications/') => http.Response(
+      jsonEncode({
+        ...jsonDecode(request.body) as Map<String, dynamic>,
+        'id': 17,
+        'star_count': 0,
+        'is_starred': false,
+        'starred_by_names': '',
+      }),
+      201,
+    ),
     ('GET', '/api/v1/projects/') => http.Response('[]', 200),
     ('POST', '/api/v1/projects/') => http.Response(
       jsonEncode({
@@ -39,13 +50,15 @@ MyApp portfolioTestApp({
   return MyApp(apiClient: api, initialToken: token);
 }
 
-Widget portfolioTestScreen(Widget screen, {ApiClient? client}) {
+Widget portfolioTestScreen(Widget screen, {ApiClient? client, String? token}) {
   final api = client ?? ApiClient(client: MockClient(portfolioResponse));
   if (client == null) addTearDown(api.close);
   return MultiProvider(
     providers: [
       Provider<ApiClient>.value(value: api),
-      ChangeNotifierProvider(create: (_) => AuthState(api)),
+      ChangeNotifierProvider(
+        create: (_) => AuthState(api, initialToken: token),
+      ),
     ],
     child: MaterialApp(home: screen),
   );

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:myportofolio_mobile/screens/certification_form.dart';
+import 'package:myportofolio_mobile/screens/certification_list_screen.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
 import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/project_list_screen.dart';
@@ -55,6 +56,8 @@ class _MyAppState extends State<MyApp> {
       routes: {
         ProjectFormPage.routeName: (_) => const ProjectFormEntry(),
         ProjectListScreen.routeName: (_) => const ProjectListScreen(),
+        CertificationListScreen.routeName: (_) =>
+            const CertificationListScreen(),
         CertificationFormPage.routeName: (_) => const CertificationFormPage(),
       },
     ),
