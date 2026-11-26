@@ -1,8 +1,14 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:myportofolio_mobile/models/certification.dart';
+import 'package:myportofolio_mobile/screens/certification_list_screen.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/utils/form_validators.dart';
-import 'package:myportofolio_mobile/widgets/left_drawer.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 import 'package:myportofolio_mobile/widgets/certification_preview.dart';
+import 'package:myportofolio_mobile/widgets/left_drawer.dart';
 import 'package:myportofolio_mobile/widgets/unsaved_form_guard.dart';
+import 'package:provider/provider.dart';
 
 class CertificationFormPage extends StatefulWidget {
   const CertificationFormPage({super.key});
@@ -23,6 +29,10 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
   bool _hasDraft = false;
   bool _drawerOpen = false;
   bool _validationAttempted = false;
+  bool _submitting = false;
+  bool _saved = false;
+
+  bool get _readOnly => _submitting || _saved;
 
   bool get _containsDraft =>
       _title.text.isNotEmpty ||
@@ -39,27 +49,95 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
   void _updateDraftState() {
     // Rebuild penjaga navigasi hanya ketika status kosong/terisi berubah.
     // Perubahan teks lainnya diperbarui oleh listener pratinjau/counter saja.
-    if (_hasDraft != _containsDraft) {
+    if (!_saved && _hasDraft != _containsDraft) {
       setState(() => _hasDraft = _containsDraft);
     }
   }
 
   Future<void> _submit() async {
-    // Jangan tampilkan error sebelum pengguna mencoba Simpan. Sesudahnya,
-    // perbaikan input langsung memperbarui pesan tanpa perlu Simpan ulang.
-    if (!_validationAttempted) {
-      setState(() => _validationAttempted = true);
-    }
-    // Semua validator dijalankan sebelum ringkasan dibuat.
+    if (_readOnly) return;
+    if (!_validationAttempted) setState(() => _validationAttempted = true);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
+    final api = context.read<ApiClient>();
+    final session = context.read<AuthState>();
+    final draft = Certification(
+      title: _title.text.trim(),
+      description: _description.text.trim(),
+      year: int.parse(_year.text.trim()),
+      isHighlight: _isHighlight,
+    );
+    String? sentToken;
+    setState(() => _submitting = true);
+    try {
+      if (!await ensureLoggedIn(context) || !mounted) return;
+      sentToken = session.token;
+      if (sentToken == null) return;
+      final saved = await api.createCertification(draft, token: sentToken);
+      if (!mounted) return;
+      setState(() {
+        _saved = true;
+        _hasDraft = false;
+        _isHighlight = saved.isHighlight;
+      });
+      // Django membersihkan spasi dan tag HTML sebelum menyimpan.
+      _title.text = saved.title;
+      _description.text = saved.description;
+      _year.text = saved.year.toString();
+      final viewList = await _showReceipt(saved);
+      if (mounted && viewList == true) {
+        Navigator.pushReplacementNamed(
+          context,
+          CertificationListScreen.routeName,
+        );
+      }
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      if (error.statusCode == 401 && sentToken != null) {
+        session.invalidateToken(sentToken);
+        _message('Sesi berakhir. Silakan login kembali.');
+        if (await ensureLoggedIn(context) && mounted) {
+          _message('Sesi aktif kembali. Tekan Simpan untuk mengirim draf.');
+        }
+      } else {
+        _message('${error.message} (HTTP ${error.statusCode})');
+      }
+    } catch (_) {
+      if (mounted) {
+        _message(
+          'Penyimpanan belum terkonfirmasi. Periksa koneksi dan daftar sertifikasi.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  void _message(String text) => ScaffoldMessenger.of(context)
+    ..removeCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
+
+  void _startNew() {
+    _formKey.currentState!.reset();
+    _title.clear();
+    _description.clear();
+    _year.clear();
+    setState(() {
+      _saved = false;
+      _hasDraft = false;
+      _isHighlight = false;
+      _validationAttempted = false;
+    });
+  }
+
+  Future<bool?> _showReceipt(Certification saved) {
     final values = {
-      'Judul': _title.text.trim(),
-      'Deskripsi': _description.text.trim(),
-      'Tahun': int.parse(_year.text.trim()).toString(),
-      'Unggulan': _isHighlight ? 'Ya' : 'Tidak',
+      'Judul': saved.title,
+      'Deskripsi': saved.description,
+      'Tahun': saved.year.toString(),
+      'Unggulan': saved.isHighlight ? 'Ya' : 'Tidak',
     };
-    await showDialog<void>(
+    return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Ringkasan Sertifikasi'),
@@ -67,17 +145,24 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: values.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text('${entry.key}: ${entry.value}'),
-            );
-          }).toList(),
+          children: [
+            const Text('Sertifikasi berhasil disimpan.'),
+            const SizedBox(height: 12),
+            for (final entry in values.entries)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text('${entry.key}: ${entry.value}'),
+              ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Tutup'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Lihat daftar'),
           ),
         ],
       ),
@@ -97,6 +182,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
   Widget build(BuildContext context) {
     return UnsavedFormGuard(
       hasChanges: _hasDraft,
+      navigationLocked: _submitting,
       drawerOpen: _drawerOpen,
       builder: (context, confirmLeave) => Scaffold(
         onDrawerChanged: (open) => setState(() => _drawerOpen = open),
@@ -108,7 +194,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        drawer: LeftDrawer(onBeforeNavigate: confirmLeave),
+        drawer: _submitting ? null : LeftDrawer(onBeforeNavigate: confirmLeave),
         body: SafeArea(
           child: Form(
             key: _formKey,
@@ -123,8 +209,8 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Lengkapi informasi sertifikasi dan pilih apakah ingin menjadikannya unggulan.',
+                      Text(
+                        _saved ? 'Sertifikasi tersimpan.' : 'Lengkapi informasi sertifikasi dan pilih apakah ingin menjadikannya unggulan.',
                       ),
                       const SizedBox(height: 20),
                       ValueListenableBuilder<TextEditingValue>(
@@ -132,6 +218,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                         builder: (context, value, child) => TextFormField(
                           key: const Key('certification-title'),
                           controller: _title,
+                          readOnly: _readOnly,
                           decoration: InputDecoration(
                             border: const OutlineInputBorder(),
                             labelText: 'Judul Sertifikasi',
@@ -162,6 +249,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       TextFormField(
                         key: const Key('certification-description'),
                         controller: _description,
+                        readOnly: _readOnly,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Deskripsi Sertifikasi',
@@ -179,6 +267,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                       TextFormField(
                         key: const Key('certification-year'),
                         controller: _year,
+                        readOnly: _readOnly,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Tahun Sertifikasi',
@@ -198,16 +287,28 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                           'Tandai sertifikasi yang ingin ditonjolkan.',
                         ),
                         value: _isHighlight,
-                        onChanged: (value) => setState(() {
-                          _isHighlight = value;
-                          _hasDraft = _containsDraft;
-                        }),
+                        onChanged: _readOnly
+                            ? null
+                            : (value) => setState(() {
+                                _isHighlight = value;
+                                _hasDraft = _containsDraft;
+                              }),
                       ),
                       const SizedBox(height: 24),
                       FilledButton.icon(
-                        onPressed: _submit,
-                        icon: const Icon(Icons.save_outlined),
-                        label: const Text('Simpan'),
+                        onPressed: _submitting
+                            ? null
+                            : _saved
+                            ? _startNew
+                            : _submit,
+                        icon: Icon(_saved ? Icons.add : Icons.save_outlined),
+                        label: Text(
+                          _submitting
+                              ? 'Menyimpan...'
+                              : _saved
+                              ? 'Tambah lagi'
+                              : 'Simpan',
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ListenableBuilder(
@@ -217,6 +318,7 @@ class _CertificationFormPageState extends State<CertificationFormPage> {
                           description: _description.text,
                           year: _year.text,
                           isHighlight: _isHighlight,
+                          saved: _saved,
                         ),
                       ),
                     ],

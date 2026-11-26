@@ -16,16 +16,21 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// A delayed 401 must not invalidate a more recent login.
+  void invalidateToken(String rejectedToken) {
+    if (_token == rejectedToken) {
+      _token = null;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     final current = _token;
     if (current == null) return;
     try {
       await _apiClient.logout(token: current);
     } finally {
-      if (_token == current) {
-        _token = null;
-        notifyListeners();
-      }
+      invalidateToken(current);
     }
   }
 }

@@ -8,11 +8,13 @@ class UnsavedFormGuard extends StatefulWidget {
     super.key,
     required this.hasChanges,
     required this.drawerOpen,
+    this.navigationLocked = false,
     required this.builder,
   });
 
   final bool hasChanges;
   final bool drawerOpen;
+  final bool navigationLocked;
   final Widget Function(
     BuildContext context,
     Future<bool> Function() confirmLeave,
@@ -28,7 +30,7 @@ class _UnsavedFormGuardState extends State<UnsavedFormGuard> {
 
   Future<bool> _confirmLeave() async {
     // Abaikan permintaan kedua agar ketukan cepat tidak menumpuk dialog/rute.
-    if (_confirming) return false;
+    if (_confirming || widget.navigationLocked) return false;
     if (!widget.hasChanges) return true;
     _confirming = true;
     try {
@@ -38,8 +40,7 @@ class _UnsavedFormGuardState extends State<UnsavedFormGuard> {
           title: const Text('Tinggalkan formulir?'),
           scrollable: true,
           content: const Text(
-            'Isian sertifikasi belum disimpan. Ringkasan hanya menampilkan '
-            'data. Jika keluar, isian akan hilang.',
+            'Isian sertifikasi belum disimpan. Jika keluar, isian akan hilang.',
           ),
           actions: [
             TextButton(
@@ -75,7 +76,8 @@ class _UnsavedFormGuardState extends State<UnsavedFormGuard> {
 
   @override
   Widget build(BuildContext context) => PopScope<Object?>(
-    canPop: !widget.hasChanges || widget.drawerOpen,
+    canPop:
+        !widget.navigationLocked && (!widget.hasChanges || widget.drawerOpen),
     onPopInvokedWithResult: _onBack,
     child: widget.builder(context, _confirmLeave),
   );

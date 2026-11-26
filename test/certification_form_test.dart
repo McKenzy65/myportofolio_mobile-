@@ -8,7 +8,9 @@ import 'package:myportofolio_mobile/screens/certification_form.dart';
 Finder _field(String key) => find.byKey(ValueKey(key));
 
 Future<void> _openForm(WidgetTester tester) async {
-  await tester.pumpWidget(portfolioTestScreen(const CertificationFormPage()));
+  await tester.pumpWidget(
+    portfolioTestScreen(const CertificationFormPage(), token: 'test-session'),
+  );
 }
 
 Future<void> _enter(WidgetTester tester, String key, String value) async {
@@ -57,7 +59,7 @@ void main() {
   );
 
   testWidgets(
-    'Ringkasan memuat semua nilai terbaru dan Tutup mempertahankan isian',
+    'Ringkasan dan formulir menunjukkan nilai tersimpan, Tambah lagi membuka draf baru',
     (tester) async {
       await _openForm(tester);
       await _save(tester);
@@ -97,19 +99,37 @@ void main() {
             .widget<TextFormField>(_field('certification-title'))
             .controller!
             .text,
-        '  Flutter Dasar  ',
+        'Flutter Dasar',
       );
       expect(
         tester.widget<SwitchListTile>(_field('certification-highlight')).value,
         isTrue,
       );
+      expect(find.text('Simpan'), findsNothing);
+      expect(
+        tester
+            .widget<EditableText>(
+              find.descendant(
+                of: _field('certification-title'),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .readOnly,
+        isTrue,
+      );
+      await tester.ensureVisible(find.text('Tambah lagi'));
+      await tester.tap(find.text('Tambah lagi'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextFormField>(_field('certification-title'))
+            .controller!
+            .text,
+        isEmpty,
+      );
       await _enter(tester, 'certification-title', 'Dart Lanjutan');
       await _enter(tester, 'certification-description', 'Materi lanjutan');
       await _enter(tester, 'certification-year', '2025');
-      await tester.ensureVisible(_field('certification-highlight'));
-      await tester.pumpAndSettle();
-      await tester.tap(_field('certification-highlight'));
-      await tester.pumpAndSettle();
       await _save(tester);
       for (final text in [
         'Judul: Dart Lanjutan',

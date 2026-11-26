@@ -10,12 +10,14 @@ class CertificationPreview extends StatelessWidget {
     required this.description,
     required this.year,
     required this.isHighlight,
+    this.saved = false,
   });
 
   final String title;
   final String description;
   final String year;
   final bool isHighlight;
+  final bool saved;
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +62,10 @@ class CertificationPreview extends StatelessWidget {
                 label: Text('Unggulan'),
               ),
             ],
-            const SizedBox(height: 12),
-            const Text('Pratinjau ini belum menyimpan data.'),
+            if (!saved) ...[
+              const SizedBox(height: 12),
+              const Text('Pratinjau ini belum menyimpan data.'),
+            ],
           ],
         ),
       ),

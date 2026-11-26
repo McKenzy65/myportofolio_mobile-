@@ -133,26 +133,29 @@ void main() {
     },
   );
 
-  testWidgets('Melihat ringkasan tidak menganggap draf sudah tersimpan', (
-    tester,
-  ) async {
-    await _openCertification(tester);
-    await _enter(tester, 'certification-title', 'Flutter Dasar');
-    await _enter(tester, 'certification-description', 'Sertifikat pemrograman');
-    await _enter(tester, 'certification-year', '2026');
-    await tester.ensureVisible(find.text('Simpan'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Simpan'));
-    await tester.pumpAndSettle();
-    expect(find.text('Ringkasan Sertifikasi'), findsOneWidget);
-    await tester.tap(find.text('Tutup'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Sertifikasi yang sudah diterima server boleh ditutup tanpa membuang draf',
+    (tester) async {
+      await _openCertification(tester);
+      await _enter(tester, 'certification-title', 'Flutter Dasar');
+      await _enter(
+        tester,
+        'certification-description',
+        'Sertifikat pemrograman',
+      );
+      await _enter(tester, 'certification-year', '2026');
+      await tester.ensureVisible(find.text('Simpan'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Simpan'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ringkasan Sertifikasi'), findsOneWidget);
+      await tester.tap(find.text('Tutup'));
+      await tester.pumpAndSettle();
 
-    await _back(tester);
-    await _chooseConfirmation(tester, 'Lanjut mengisi');
-    expect(_value(tester, 'certification-title'), 'Flutter Dasar');
-    expect(tester.takeException(), isNull);
-  });
+      await _back(tester);
+      _expectHome(tester);
+    },
+  );
 
   for (final destination in ['Home', 'Add Project']) {
     testWidgets(
