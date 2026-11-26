@@ -1,28 +1,57 @@
-# MyPortfolio Mobile — Tugas 7
+# MyPortfolio Mobile
 
-Aplikasi portofolio Flutter milik **Umar Faiz Rahman**, NPM **2506616711**, kelas **PBP F**. Proyek ini melanjutkan Tutorial 08 untuk memenuhi Individual Assignment 7: Basic Flutter.
+[![CI Flutter dan APK](https://github.com/McKenzy65/myportofolio_mobile-/actions/workflows/main.yaml/badge.svg?branch=main)](https://github.com/McKenzy65/myportofolio_mobile-/actions/workflows/main.yaml?query=branch%3Amain)
+
+Portofolio Flutter milik **Umar Faiz Rahman**, NPM **2506616711**, kelas **PBP F**. Pengunjung dapat membuka proyek dan sertifikasi dari Django. Pemilik dapat login dan menambah entri. Tugas 7 membangun halaman utama, Tugas 8 menambahkan formulir sertifikasi, Tutorial 10 menghubungkan proyek ke Django, dan Assignment 9 menghubungkan sertifikasi ke API yang sama. [Refleksi dan pengujian Assignment 9](#assignment-9)
 
 ## Menjalankan aplikasi
 
-Lingkungan pengembangan: Flutter **3.47.9**, Dart **3.13.7**. Pasang dependency yang tercatat pada `pubspec.yaml` dan `pubspec.lock`, lalu jalankan dari direktori utama proyek:
+Proyek memakai Flutter **3.47.9** dan Dart **3.13.7**. Backend menjalankan Django **5.2** dengan Django REST Framework. Kode backend, data sertifikasi publik, dan tampilan web bisa dibuka melalui tautan berikut.
+
+| Sumber | Tautan |
+| --- | --- |
+| Backend Django | [McKenzy65/myportofolio](https://github.com/McKenzy65/myportofolio) |
+| API sertifikasi di PWS | [Daftar sertifikasi dalam JSON](https://umar-faiz-myportofolio.pws.cs.ui.ac.id/api/v1/certifications/?format=json) |
+| Halaman web Django | [Sertifikasi portofolio](https://umar-faiz-myportofolio.pws.cs.ui.ac.id/certifications/) |
+| CI dan unduhan APK | [Buka run dari cabang main, lalu pilih artefak app-release-apk](https://github.com/McKenzy65/myportofolio_mobile-/actions/workflows/main.yaml?query=branch%3Amain) |
+
+**Terminal 1 · Backend lokal.** Perintah PowerShell berikut dimulai dari folder induk tempat kedua proyek akan disimpan. Jika sudah punya salinan repositorinya, masuk langsung ke folder backend. Untuk menguji pembuatan entri, buat superuser khusus pengujian di basis data SQLite lokal.
 
 ```powershell
+git clone https://github.com/McKenzy65/myportofolio.git portofolio
+cd portofolio
+py -m venv env
+.\env\Scripts\python.exe -m pip install -r requirements.txt
+.\env\Scripts\python.exe manage.py migrate
+.\env\Scripts\python.exe manage.py createsuperuser
+.\env\Scripts\python.exe manage.py runserver
+```
+
+**Terminal 2 · Flutter.** Buka PowerShell baru di folder induk yang sama. Jika repositori mobile sudah tersedia, mulai dari folder proyek yang memuat `pubspec.yaml`.
+
+```powershell
+git clone https://github.com/McKenzy65/myportofolio_mobile-.git myportofolio_mobile
+cd myportofolio_mobile
 flutter pub get
 dart run build_runner build
 flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
 ```
 
-Untuk mencoba daftar proyek dan login, jalankan backend Django di terminal terpisah dengan `python manage.py migrate` dan `python manage.py runserver` dari folder `portofolio`.
+Untuk emulator Android, pilih emulator saat menjalankan `flutter run`. Nilai bawaan `http://10.0.2.2:8000` mengarah ke server pada komputer host. Untuk memakai backend terpasang dari perangkat Android, jalankan `flutter run --dart-define=API_BASE_URL=https://umar-faiz-myportofolio.pws.cs.ui.ac.id`. Nilai konfigurasi berisi origin saja. `ApiClient` menambahkan path seperti `/api/v1/certifications/` pada setiap permintaan.
 
-Pemeriksaan kode dan build:
+**Demo dengan PWS.** APK release yang dibangun CI menggunakan backend PWS. Untuk mencoba backend yang sama lewat Chrome, jalankan perintah berikut setelah code generation. Port tetap 7357 membuat origin Flutter Web sesuai dengan konfigurasi CORS untuk demo.
 
 ```powershell
-flutter analyze
-flutter test
-flutter build web
+flutter run -d chrome --web-port=7357 --dart-define=API_BASE_URL=https://umar-faiz-myportofolio.pws.cs.ui.ac.id
 ```
 
-Proyek berada di repositori mobile [myportofolio_mobile-](https://github.com/McKenzy65/myportofolio_mobile-), terpisah dari repositori Django. Tanda hubung di akhir nama repositori merupakan bagian dari alamatnya.
+Jalankan pemeriksaan lokal dari direktori Flutter yang sudah menjalankan generator.
+
+```powershell
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+```
 
 ## Fitur dan checklist Tugas 7
 
@@ -188,3 +217,43 @@ Di versi ini, Home berada di [lib/screens/menu.dart](lib/screens/menu.dart). Dar
 Tugas 7 menambahkan halaman identitas serta kartu aksi. Tutorial 09 menambahkan formulir proyek dan drawer. Tugas 8 melanjutkannya dengan formulir sertifikasi, navigasi dari dua tempat, ringkasan tervalidasi, lalu pratinjau dan konfirmasi sebelum meninggalkan draf. Aturan judul dan tahun berada di `FormValidators`. Pratinjau memakai pemeriksaan tahun yang sama dengan tombol **Simpan**.
 
 Codex membantu mengadaptasi kode sertifikasi dari cadangan lokal ke struktur Tutorial 09 saat ini, menyunting widget dan test. Koreksi lingkup oleh pemilik proyek dan koreksi teknis oleh asisten dirinci dalam [log prompt dan penggunaan AI Tugas 8](docs/ai-assistance-tugas-8.md).
+
+### Assignment 9
+
+1. **Bagaimana model menjaga kontrak JSON?** `Certification` menyimpan `year` sebagai bilangan bulat, `isHighlight` sebagai boolean, dan `starredByNames` sebagai string dari serializer Django. `@JsonSerializable(fieldRename: FieldRename.snake)` menghasilkan pasangan baca/tulis seperti `isHighlight` ↔ `is_highlight`. Salah ketik `isHighlight` di map buatan widget dapat membuat entri unggulan tersimpan sebagai sertifikasi biasa karena backend memakai nilai bawaan. Dengan `@JsonKey(includeToJson: false)`, klien dapat membaca ID pemberian Django serta statistik bintang, sedangkan POST hanya membawa judul, deskripsi, tahun, dan status unggulan. [Model](lib/models/certification.dart) · [Tes kontrak JSON](test/certification_model_test.dart)
+
+2. **Kapan daftar dimuat dan bagaimana gagal dibedakan dari kosong?** `initState()` membuat satu Future ketika halaman dibuka. `FutureBuilder` menggunakan Future itu saat pengguna mengetik pencarian, mengganti filter unggulan, atau saat tema berubah. Membuat permintaan di `build()` dapat memicu GET baru pada tiap ketikan. Tarik untuk menyegarkan, tombol **Muat ulang**, atau **Coba lagi** mengganti Future secara eksplisit. Respons `200 []` berarti daftar memang kosong. `ApiException` mempertahankan status HTTP sehingga layar bisa menawarkan retry, form bisa meminta login ulang pada 401, dan respons 403 bisa menjelaskan keterbatasan izin. Nilai `null` akan menghilangkan perbedaan itu. [Layar daftar](lib/screens/certification_list_screen.dart) · [Klien API](lib/services/api_client.dart)
+
+3. **Mengapa ada dua cara autentikasi?** Halaman Django menggunakan `SessionAuthentication`. Browser mengirim cookie sesi secara otomatis sehingga permintaan perubahan data juga memerlukan token CSRF. Di Flutter, `POST /api/v1/auth/token/` menukar username dan password dengan token DRF. `AuthState` menyimpan token di memori dan klien menyertakan header `Authorization: Token <key>` saat membuat entri. Logout meminta backend mencabut token, lalu membersihkan sesi lokal. Keduanya memakai aturan izin Django yang sama. Siapa pun bisa membaca daftar dan detail. Untuk sertifikasi baru, backend memerlukan superuser. Pengguna biasa yang sudah login menerima 403. [Pengelolaan sesi](lib/services/auth_state.dart) · [Izin backend](https://github.com/McKenzy65/myportofolio/blob/main/main/permissions.py)
+
+4. **Apa yang terjadi dari push sampai APK?** Job `build` memanggil workflow Flutter dari `very_good_workflows`. Workflow menyiapkan Flutter, memasang dependency, menjalankan generator pada langkah setup, lalu memeriksa format, menganalisis kode, dan menjalankan tes dengan coverage. Ambang minimum coverage pada tugas ini adalah 0. Setelah `build` sukses, `build_apk` menjalankan generator lagi di runner tersendiri, mengompilasi APK release dan mengunggah `app-release-apk`. Berkas `*.g.dart` dapat dibuat kembali dari model beranotasi dan dependency di `pubspec.lock`. Git mengabaikannya untuk menghindari duplikasi serta konflik pada kode hasil generator. Karena itu checkout baru dan setiap job yang mengompilasi kode perlu menjalankan `build_runner` terlebih dahulu. [Workflow](.github/workflows/main.yaml)
+
+#### Mencoba integrasi sertifikasi
+
+- Sebagai pengunjung, pilih kartu **Lihat Sertifikasi** atau **Certifications** di drawer. Ketuk entri untuk memuat detail dari server berdasarkan ID. Daftar bisa dicari dengan judul, deskripsi, atau tahun, lalu dipersempit dengan filter **Unggulan**. Data bintang pada detail berasal dari permintaan publik.
+- Di **Tambah Sertifikasi**, isi judul, deskripsi, tahun, dan status unggulan. Tekan **Simpan**. Draf bisa disusun sebelum login. Saat diminta, masuk dengan superuser lokal. Setelah server mengembalikan 201, tekan **Lihat daftar**, buka entri yang baru dibuat, lalu segarkan halaman Django di `http://localhost:8000/certifications/` untuk mencocokkan hasilnya. Pilih **Logout** di drawer untuk mengakhiri sesi.
+- Untuk mereproduksi 401, gunakan basis data lokal dan superuser uji khusus dengan nama `uji_tugas9`. Login lewat drawer, buka formulir, dan isi draf. Dari terminal lain di folder backend lokal, jalankan perintah di bawah untuk mencabut token akun uji. Saat **Simpan** ditekan, login muncul lagi. Draf dipertahankan agar bisa diperiksa dan dikirim sesudah login ulang.
+
+```powershell
+.\env\Scripts\python.exe manage.py shell -c "from rest_framework.authtoken.models import Token; Token.objects.filter(user__username='uji_tugas9').delete()"
+```
+
+Tes `MockClient` memeriksa header permintaan, isi POST, dan respons 400/401/403. Tes widget daftar memeriksa retry setelah kegagalan, kondisi kosong, refresh, filter tanpa GET tambahan, serta detail yang berubah atau sudah dihapus. [Tes HTTP sertifikasi](test/certification_api_test.dart) · [Tes daftar dan detail](test/certification_list_test.dart) · [Tes pengiriman, sesi kedaluwarsa, dan draf](test/certification_submission_test.dart)
+
+#### Hasil pengujian pada 26 November 2026
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| Flutter | 72 tes lulus. Format Dart bersih dan analyzer tidak menemukan isu. |
+| Django | 146 tes lulus, termasuk POST dengan token pemilik, penolakan akun biasa, pencabutan token, dan CSRF untuk sesi browser. |
+| Chrome dengan Django lokal | Login lalu **Simpan** menghasilkan HTTP 201. Setelah halaman Django dimuat ulang, sertifikasi terlihat. Percobaan berikutnya dengan token yang sudah dicabut menghasilkan 401. Login ulang menjaga draf sampai pengguna menekan **Simpan** lagi. Jumlah baris di database uji mengonfirmasi tiap entri tersimpan satu kali. |
+| Chrome dengan PWS | Daftar publik memuat enam sertifikasi dari Django. Detail UKBI dapat dibuka melalui GET berdasarkan ID. Pencarian dan filter unggulan bekerja tanpa permintaan tambahan. |
+
+![Daftar enam sertifikasi dari PWS di Flutter Web, lengkap dengan pencarian dan filter unggulan](docs/images/tugas9-sertifikasi-pws.png)
+
+#### Penggunaan AI dan koreksi
+
+Pemilik proyek melampirkan rubrik dengan arahan “bantu push commit bertahap, harus full poin 4”. Codex (OpenAI) membantu memetakan checklist ke kode Tugas 8 dan Tutorial 10, menyunting aplikasi, menulis tes, dan menyusun draf empat jawaban di atas. Perbandingan antara contoh Project dan backend sertifikasi menghasilkan dua koreksi selama implementasi.
+
+- Contoh proyek memakai UUID. Pemeriksaan pada serializer dan URL Django menunjukkan ID sertifikasi berupa bilangan bulat dan `starred_by_names` dikirim sebagai satu string. Model Flutter serta tes disesuaikan dengan respons aktual.
+- Konfigurasi token global saja belum cukup karena view sertifikasi lama menentukan autentikasi sesi sendiri. Pemeriksaan kode backend menemukan pengaturan tersebut. Implementasi disesuaikan supaya klien Flutter dapat mengirim token sementara alur sesi dan CSRF web tetap berfungsi. Mock HTTP bisa menguji reaksi layar terhadap 401, tetapi keberhasilan mock saja tidak membuktikan Django menerima token. Verifikasi terpisah terhadap server menguji batas ini.
