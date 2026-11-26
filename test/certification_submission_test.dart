@@ -78,8 +78,9 @@ void main() {
         portfolioTestApp(
           token: 'kedaluwarsa',
           handle: (request) async {
-            if (request.url.path != '/api/v1/certifications/')
+            if (request.url.path != '/api/v1/certifications/') {
               return portfolioResponse(request);
+            }
             if (request.method == 'GET') {
               publicReads++;
               expect(request.headers.containsKey('Authorization'), isFalse);

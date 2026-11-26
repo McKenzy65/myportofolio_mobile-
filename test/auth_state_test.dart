@@ -39,6 +39,31 @@ void main() {
     },
   );
 
+  test('A late 401 clears only the token that the server rejected', () async {
+    final api = ApiClient(
+      client: MockClient((request) async {
+        expect(request.url.path, '/api/v1/auth/token/');
+        return http.Response('{"token":"new-session"}', 200);
+      }),
+    );
+    addTearDown(api.close);
+    final auth = AuthState(api, initialToken: 'old-session');
+    addTearDown(auth.dispose);
+    final observedTokens = <String?>[];
+    auth.addListener(() => observedTokens.add(auth.token));
+
+    await auth.login('student', 'demo');
+    // This response belongs to a request sent before the new login.
+    auth.invalidateToken('old-session');
+    expect(auth.token, 'new-session');
+    expect(observedTokens, ['new-session']);
+
+    auth.invalidateToken('new-session');
+    auth.invalidateToken('new-session');
+    expect(auth.isLoggedIn, isFalse);
+    expect(observedTokens, ['new-session', null]);
+  });
+
   test('Failed login leaves session anonymous', () async {
     final auth = AuthState(
       ApiClient(client: MockClient((_) async => http.Response('{}', 400))),
